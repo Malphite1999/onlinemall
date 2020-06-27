@@ -54,6 +54,9 @@ export default {
 </script>
 
 <style>
+.swiper{
+  margin-top: 44px;
+}
 .swiper a img{
   width: 100%;
 }
