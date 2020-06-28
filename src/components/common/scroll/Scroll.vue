@@ -30,29 +30,43 @@ export default {
     this.scroll = new BScroll(this.$refs.wrapper, {
       click: true,
       probeType: this.probeType,
-      pullUpLoad: this.pullUpLoad
-    }),
+      pullUpLoad: this.pullUpLoad,
+      // 解决ios13中快速滑动异常回弹（ios版本问题）
+      useTransition: false
+    })
     // 2.监听滚动的位置
-    this.scroll.on('scroll', (position) => {
+    if (this.probeType === 2 || this.probeType === 3) {
+      this.scroll.on('scroll', (position) => {
       // console.log(position);
       this.$emit('scroll', position)
-    })
+      })
+    }
     // 3.上拉加载更多事件
-    this.scroll.on('pullingUp', () => {
+    if (this.pullUpLoad) {
+      this.scroll.on('pullingUp', () => {
       this.$emit('pullingUp')
-    })
+      })
+    }
   },
   methods: {
     scrollTo(x, y, time=500) {
-      this.scroll.scrollTo(x, y, time)
+      this.scroll && this.scroll.scrollTo(x, y, time)
     },
     finishPullUp() {
-      this.scroll.finishPullUp()
+      this.scroll && this.scroll.finishPullUp()
+    },
+    refresh() {
+      this.scroll && this.scroll.refresh()
+    },
+    getScrollY() {
+      return this.scroll ? this.scroll.y : 0
     }
   }
 }
 </script>
 
 <style>
-
+.wrapper{
+  overflow: hidden;
+}
 </style>

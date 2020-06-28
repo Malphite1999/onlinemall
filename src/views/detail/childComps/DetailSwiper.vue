@@ -1,11 +1,9 @@
 <template>
-  <div class="swiper">
+  <div class="swaper">
     <swiper :options="swiperOption">
       <!-- slides -->
-      <swiper-slide v-for="(item,index) in banner" :key="index">
-        <a :href="item.link">
-          <img :src="item.image" alt="" @load="imageLoad">
-        </a>
+      <swiper-slide v-for="(item,index) in topImages" :key="index">
+        <img :src="item" alt="">
       </swiper-slide>
       <!-- 轮播图下方的分页小圆点 -->
       <div class="swiper-pagination"  slot="pagination"></div>
@@ -18,8 +16,9 @@ import { Swiper, SwiperSlide, directive } from 'vue-awesome-swiper'
 import 'swiper/css/swiper.css'
 
 export default {
+  name: "DetailSwiper",
   props: {
-    banner: {
+    topImages: {
       type: Array,
       default() {
         return []
@@ -34,14 +33,6 @@ export default {
   components: {
     Swiper,
     SwiperSlide
-  },
-  methods:{
-    imageLoad() {
-      if (!this.isLoad) {
-        this.$emit('swiperImageLoad')
-        this.isLoad = true
-      }
-    }
   },
   directives: {
     swiper: directive
@@ -67,7 +58,11 @@ export default {
 </script>
 
 <style>
-.swiper a img{
+.swiper-slide img{
   width: 100%;
+}
+.swiper-slide{
+  overflow: hidden;
+  height: 300px;
 }
 </style>
