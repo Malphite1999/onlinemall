@@ -16,7 +16,8 @@
     @pullingUp="loadMore">
       <home-swiper 
       :banner="banner"
-      @swiperImageLoad="swiperImageLoad"/>
+      @swiperImageLoad="swiperImageLoad"
+      :homeSwiperHeight = "homeSwiperHeight"/>
       <home-recommend-view :recommend="recommend"/>
       <feature-view/>
       <tab-control 
@@ -70,7 +71,8 @@ export default {
       isShowBackTop: false,
       tabOffsetTop: 0,
       isTabControlFixed: false,
-      saveY: 0
+      saveY: 0,
+      homeSwiperHeight: true
     }
   },
   computed: {
@@ -87,7 +89,7 @@ export default {
     this.getHomeGoods('sell')
   },
   mounted() {
-    // 监听item中的图片加载完成（解决better-scroll中的bug）
+    // 监听item中的图片加载完成（解决better-scroll中高度的bug）
     const refresh = debounce(this.$refs.scroll.refresh, 200)
     this.$bus.$on('itemImageLoad', () => {
       refresh()
@@ -96,9 +98,11 @@ export default {
   activated() {
     this.$refs.scroll.refresh()
     this.$refs.scroll.scrollTo(0, this.saveY, 0)
+    this.homeSwiperHeight = true
   },
   deactivated() {
     this.saveY = this.$refs.scroll.getScrollY()
+    this.homeSwiperHeight = false
   },
   methods: {
     // 事件监听方法

@@ -2,7 +2,8 @@
   <div class="swiper">
     <swiper :options="swiperOption">
       <!-- slides -->
-      <swiper-slide v-for="(item,index) in banner" :key="index">
+      <swiper-slide v-for="(item,index) in banner" :key="index"
+      :class="{'swiperHeight':homeSwiperHeight}">
         <a :href="item.link">
           <img :src="item.image" alt="" @load="imageLoad">
         </a>
@@ -24,11 +25,9 @@ export default {
       default() {
         return []
       }
-    }
-  },
-  data() {
-    return {
-      isLoad: false
+    },
+    homeSwiperHeight: {
+      type: Boolean
     }
   },
   components: {
@@ -59,8 +58,9 @@ export default {
           disableOnInteraction: false //触碰后停止切换
         },
         speed: 500,  //切换速度
-        loop: true  //循环
-      }
+        loop: true,  //循环
+      },
+      isLoad: false
     }
   },
 }
@@ -69,5 +69,13 @@ export default {
 <style>
 .swiper a img{
   width: 100%;
+}
+/* 解决同时引用swiper高度不统一 */
+.wrapper .swiperHeight{
+  height: auto;
+}
+.swiper-slide{
+  height: 300px;
+  overflow: hidden;
 }
 </style>

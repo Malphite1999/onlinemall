@@ -50,7 +50,7 @@ export default {
           disableOnInteraction: false //触碰后停止切换
         },
         speed: 500,  //切换速度
-        loop: true  //循环
+        loop: true,  //循环,
       }
     }
   },
@@ -62,7 +62,6 @@ export default {
   width: 100%;
 }
 .swiper-slide{
-  overflow: hidden;
   height: 300px;
 }
 </style>
