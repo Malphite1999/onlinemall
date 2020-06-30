@@ -1,6 +1,6 @@
 <template>
   <div id="detail">
-    <detail-nav-bar/>
+    <detail-nav-bar @titleClick="titleClick"/>
     <scroll class="content"
     ref="scroll">
       <detail-swiper :top-images="topImages"/>
@@ -10,6 +10,8 @@
       :detail-info="detailInfo"
       @imageLoad="imageLoad"/>
       <detail-param-info :param-info = 'paramInfo' ref="params"/>
+      <detail-comment-info :comment-info="commentInfo"/>
+      <goods-list :goods="recommends"/>
     </scroll>
   </div>
 </template>
@@ -21,12 +23,14 @@ import DetailBaseInfo from './childComps/DetailBaseInfo'
 import DetailShop from'./childComps/DetailShop'
 import DetailGoodsInfo from './childComps/DetailGoodsInfo'
 import DetailParamInfo from './childComps/DetailParamInfo'
+import DetailCommentInfo from './childComps/DetailCommentInfo'
 
-import {debounce} from 'common/utils/debounce'
+import {itemListenerMixin} from 'common/mixin'
 
 import Scroll from 'components/common/scroll/Scroll'
+import GoodsList from 'components/content/goods/GoodsList'
 
-import {getDetail, Goods, Shop, GoodsParam} from 'network/detail'
+import {getDetail, Goods, Shop, GoodsParam, getRecommend} from 'network/detail'
 
 export default {
   name: "Detail",
@@ -37,7 +41,9 @@ export default {
     DetailShop,
     Scroll,
     DetailGoodsInfo,
-    DetailParamInfo
+    DetailParamInfo,
+    DetailCommentInfo,
+    GoodsList
   },
   data() {
     return {
@@ -47,8 +53,12 @@ export default {
       shop: {},
       detailInfo: {},
       paramInfo: {},
+      commentInfo: {},
+      recommends: [],
+      themeTopYs: []
     }
   },
+  mixins: [itemListenerMixin],
   created() {  
     // 保存传入的iid
     this.iid = this.$route.params.iid
@@ -69,12 +79,28 @@ export default {
       this.paramInfo = new GoodsParam(
         data.itemParams.info,
         data.itemParams.rule
-      );
+      )
+      // 6.取出评论信息
+      if (data.rate.cRate !== 0) {
+        this.commentInfo = data.rate.list[0]
+      }
     })
+    // 请求推荐数据
+    getRecommend().then(res => {
+      this.recommends = res.data.list
+    })
+  },
+  mounted() {
+  },
+  destroyed() {
+    this.$bus.$off('itemImageLoad', this.itemImageListener)
   },
   methods: {
     imageLoad() {
-      this.$refs.scroll.scroll.refresh()
+      this.refresh()
+    },
+    titleClick(index) {
+      this.$refs.scroll.scrollTo(0, -this.themeTopYs[index], 200)
     }
   }
 }
@@ -90,5 +116,8 @@ export default {
 .content{
   overflow: hidden;
   height: calc(100% - 44px);
+}
+.goods-info{
+  position: relative;
 }
 </style>

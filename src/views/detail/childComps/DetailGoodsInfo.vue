@@ -30,18 +30,10 @@
     methods: {
 	    imgLoad() {
         // 判断一下是否所有图片都获取完成,防抖
-        if (++this.counter === this.imagesLength) {
-	        this.$emit('imgLoad')
-        }
-	    }
-    },
-    watch: {
-	    detailInfo() {
-        // 获取图片的长度
-	    	this.imagesLength = this.detailInfo.detailImage[0].list.length
-	    }
-    }
-	}
+	      this.$emit('imgLoad')
+      }
+	  }
+  }
 </script>
 
 <style scoped>

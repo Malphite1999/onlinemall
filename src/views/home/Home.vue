@@ -34,7 +34,7 @@
 
 <script>
 import {getHomeMultidata, getHomeGoods} from 'network/home.js'
-import {debounce} from 'common/utils/debounce'
+import {itemListenerMixin} from 'common/mixin'
 
 import NavBar from 'components/common/navbar/NavBar'
 import TabControl from 'components/content/tabControl/TabControl'
@@ -80,6 +80,7 @@ export default {
       return this.goods[this.currentType].list
     }
   },
+  mixins:[itemListenerMixin],
   created() {
     // 请求多个数据
     this.getHomeMultidata(),
@@ -89,11 +90,6 @@ export default {
     this.getHomeGoods('sell')
   },
   mounted() {
-    // 监听item中的图片加载完成（解决better-scroll中高度的bug）
-    const refresh = debounce(this.$refs.scroll.refresh, 200)
-    this.$bus.$on('itemImageLoad', () => {
-      refresh()
-    })
   },
   activated() {
     this.$refs.scroll.refresh()
@@ -101,7 +97,11 @@ export default {
     this.homeSwiperHeight = true
   },
   deactivated() {
+    // 保存离开时的y值
     this.saveY = this.$refs.scroll.getScrollY()
+    // 取消全局事件的监听
+    this.$bus.$off('itemImgLoad', this.itemImageListener)
+    // swiper高度问题
     this.homeSwiperHeight = false
   },
   methods: {
