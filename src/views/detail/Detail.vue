@@ -1,18 +1,30 @@
 <template>
   <div id="detail">
-    <detail-nav-bar @titleClick="titleClick"/>
+    <detail-nav-bar 
+    @titleClick="titleClick"
+    ref="nav"/>
     <scroll class="content"
-    ref="scroll">
+    ref="scroll"
+    @scroll="contentScroll"
+    :probe-type="3">
       <detail-swiper :top-images="topImages"/>
       <detail-base-info :goods="goods"/>
       <detail-shop :shop="shop"/>
       <detail-goods-info 
       :detail-info="detailInfo"
-      @imageLoad="imageLoad"/>
-      <detail-param-info :param-info = 'paramInfo' ref="params"/>
-      <detail-comment-info :comment-info="commentInfo"/>
-      <goods-list :goods="recommends"/>
+      @imgLoad="imgLoad"/>
+      <detail-param-info 
+      :param-info = 'paramInfo' 
+      ref="params"/>
+      <detail-comment-info 
+      :comment-info="commentInfo"
+      ref="comment"/>
+      <goods-list 
+      :goods="recommends"
+      ref="recommend"/>
     </scroll>
+    <detail-bottom-bar @addCart="addToCart"/>
+    <back-top @click.native="backClick" v-show="isShowBackTop"/>
   </div>
 </template>
 
@@ -24,8 +36,10 @@ import DetailShop from'./childComps/DetailShop'
 import DetailGoodsInfo from './childComps/DetailGoodsInfo'
 import DetailParamInfo from './childComps/DetailParamInfo'
 import DetailCommentInfo from './childComps/DetailCommentInfo'
+import DetailBottomBar from './childComps/DetailBottomBar'
 
-import {itemListenerMixin} from 'common/mixin'
+import {itemListenerMixin, backTopMixin} from 'common/mixin'
+import {debounce} from 'common/utils/debounce'
 
 import Scroll from 'components/common/scroll/Scroll'
 import GoodsList from 'components/content/goods/GoodsList'
@@ -43,7 +57,8 @@ export default {
     DetailGoodsInfo,
     DetailParamInfo,
     DetailCommentInfo,
-    GoodsList
+    GoodsList,
+    DetailBottomBar
   },
   data() {
     return {
@@ -55,10 +70,12 @@ export default {
       paramInfo: {},
       commentInfo: {},
       recommends: [],
-      themeTopYs: []
+      themeTopYs: [],
+      getThemeTopY: null,
+      currentIndex: 0
     }
   },
-  mixins: [itemListenerMixin],
+  mixins: [itemListenerMixin, backTopMixin],
   created() {  
     // 保存传入的iid
     this.iid = this.$route.params.iid
@@ -89,6 +106,15 @@ export default {
     getRecommend().then(res => {
       this.recommends = res.data.list
     })
+    // 给getThemetopY
+    this.getThemeTopY = debounce(() => {
+      this.themeTopYs = [];
+      this.themeTopYs.push(0);
+      this.themeTopYs.push(this.$refs.params.$el.offsetTop-44);
+      this.themeTopYs.push(this.$refs.comment.$el.offsetTop-44);
+      this.themeTopYs.push(this.$refs.recommend.$el.offsetTop-44); 
+      this.themeTopYs.push(Number.MAX_VALUE)
+    }, 100)
   },
   mounted() {
   },
@@ -96,11 +122,37 @@ export default {
     this.$bus.$off('itemImageLoad', this.itemImageListener)
   },
   methods: {
-    imageLoad() {
-      this.refresh()
+    imgLoad() {
+      this.$refs.scroll.refresh()
+      this.getThemeTopY()
     },
     titleClick(index) {
       this.$refs.scroll.scrollTo(0, -this.themeTopYs[index], 200)
+    },
+    contentScroll(position) {
+      // 获取y值
+      const positionY = -position.y
+      // positionY和主题中的值进行对比
+      let length =this.themeTopYs.length
+      for(let i = 0; i < length-1; i++){
+        if(this.currentIndex !== i && (positionY >= this.themeTopYs[i] && positionY < this.themeTopYs[i+1])) {
+          this.currentIndex = i
+          this.$refs.nav.currentIndex = this.currentIndex
+        }
+      }
+      // 判断BackTop是否显示
+      this.isShowBackTop = (-position.y) > 1000
+    },
+    addToCart() {
+      // 1.获取购物车需要展示的信息
+      const product = {}
+      product.image = this.topImages[0]
+      product.title = this.goods.title
+      product.desc = this.goods.desc
+      product.price = this.goods.newPrice
+      product.iid = this.iid
+      // 2.将商品添加到购物车里
+      this.$store.commit('addCart', product)
     }
   }
 }
@@ -115,7 +167,7 @@ export default {
 }
 .content{
   overflow: hidden;
-  height: calc(100% - 44px);
+  height: calc(100% - 99px);
 }
 .goods-info{
   position: relative;

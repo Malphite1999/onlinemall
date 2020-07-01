@@ -34,13 +34,12 @@
 
 <script>
 import {getHomeMultidata, getHomeGoods} from 'network/home.js'
-import {itemListenerMixin} from 'common/mixin'
+import {itemListenerMixin, backTopMixin} from 'common/mixin'
 
 import NavBar from 'components/common/navbar/NavBar'
 import TabControl from 'components/content/tabControl/TabControl'
 import GoodsList from 'components/content/goods/GoodsList'
 import Scroll from 'components/common/scroll/Scroll'
-import BackTop from 'components/content/backTop/BackTop'
 
 import HomeSwiper from './childComps/HomeSwiper'
 import HomeRecommendView from './childComps/HomeRecommendView'
@@ -53,7 +52,6 @@ export default {
     TabControl,
     GoodsList,
     Scroll,
-    BackTop,
     HomeSwiper,
     HomeRecommendView,
     FeatureView,
@@ -68,7 +66,6 @@ export default {
         'sell': {page: 0, list: []}
       },
       currentType: 'pop',
-      isShowBackTop: false,
       tabOffsetTop: 0,
       isTabControlFixed: false,
       saveY: 0,
@@ -80,7 +77,7 @@ export default {
       return this.goods[this.currentType].list
     }
   },
-  mixins:[itemListenerMixin],
+  mixins:[itemListenerMixin, backTopMixin],
   created() {
     // 请求多个数据
     this.getHomeMultidata(),
@@ -121,9 +118,6 @@ export default {
       this.$refs.fixTabControl.currentIndex = index 
       this.$refs.tabControl.currentIndex = index
     },
-    backClick() {
-      this.$refs.scroll.scrollTo(0, 0)
-    },
     contentScroll(position) {
       // 判断BackTop是否显示
       this.isShowBackTop = (-position.y) > 1000
@@ -138,7 +132,7 @@ export default {
     loadMore(){
       this.getHomeGoods(this.currentType)
 
-      this.$refs.scroll.scroll.refresh()
+      this.$refs.scroll.refresh()
     },
     // 网络请求方法
     getHomeMultidata() {
