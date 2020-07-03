@@ -46,6 +46,8 @@ import GoodsList from 'components/content/goods/GoodsList'
 
 import {getDetail, Goods, Shop, GoodsParam, getRecommend} from 'network/detail'
 
+import {mapActions} from 'vuex'
+
 export default {
   name: "Detail",
   components:{
@@ -122,6 +124,7 @@ export default {
     this.$bus.$off('itemImageLoad', this.itemImageListener)
   },
   methods: {
+    ...mapActions(['addCart']),
     imgLoad() {
       this.$refs.scroll.refresh()
       this.getThemeTopY()
@@ -152,7 +155,9 @@ export default {
       product.price = this.goods.newPrice
       product.iid = this.iid
       // 2.将商品添加到购物车里
-      this.$store.dispatch('addCart',product)
+      this.addCart(product).then(res => {
+        this.$toast.show(res, 2000)
+      })
     }
   }
 }
